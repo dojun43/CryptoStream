@@ -4,12 +4,12 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: crytostream
+      POSTGRES_DB: cryptostream
       TZ: Asia/Seoul
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "crytostream"]
+      test: ["CMD", "pg_isready", "-U", "cryptostream"]
       interval: 10s
       retries: 5
       start_period: 5s
