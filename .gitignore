@@ -2,3 +2,4 @@ venv
 test
 private
 /terraform/.terraform*
+/terraform/terraform*
