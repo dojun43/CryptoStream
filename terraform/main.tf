@@ -1,6 +1,6 @@
 # 고정 ip
 resource "google_compute_address" "static_ip" {
-  name   = "CryptoStream-static-ip"
+  name   = "cryptostream-static-ip"
   project = var.project
   region  = var.region
 }
