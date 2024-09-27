@@ -36,7 +36,7 @@ resource "google_compute_firewall" "allow-ssh" {
 
 # gce
 resource "google_compute_instance" "default" {
-  name         = "seoulrealtimecityair-gce"
+  name         = "cryptostream-gce"
   machine_type = "n2-standard-4"
   zone         = var.zone
 
