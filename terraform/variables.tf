@@ -2,7 +2,7 @@
 
 variable "credentials" {
   description = "GCP에 액세스하기 위한 json 파일"
-  default = "C:/Users/DODO/VScode/CryptoStream/private/gcp_account.json"
+  default = "C:/Users/DODO/VScode/CryptoStream/private/cryptostream_account.json"
 }
 
 variable "project" {
