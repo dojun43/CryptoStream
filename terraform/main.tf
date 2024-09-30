@@ -20,6 +20,20 @@ resource "google_compute_firewall" "allow-postgres" {
   target_tags   = ["allow-postgres"]
 }
 
+resource "google_compute_firewall" "allow-redis" {
+  name    = "allow-redis"
+  project = var.project
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["6379"]
+  }
+
+  source_ranges = ["0.0.0.0/0"] 
+  target_tags   = ["allow-redis"]
+}
+
 resource "google_compute_firewall" "allow-ssh" {
   name    = "allow-ssh"
   project = var.project
@@ -55,5 +69,5 @@ resource "google_compute_instance" "default" {
 
   metadata_startup_script = file("startup_script.sh")
 
-  tags = ["allow-ssh", "allow-postgres"]
+  tags = ["allow-ssh", "allow-postgres", "allow-redis"]
 }
