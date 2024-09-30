@@ -22,7 +22,7 @@ services:
 
   redis:
     image: redis:7.2-bookworm
-    command: [ "redis-server", "--requirepass", ${REDIS_PASSWORD}]
+    command: [ "redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
