@@ -1,5 +1,6 @@
 import os
 import sys
+import configparser
 import logging
 import json
 from datetime import datetime
@@ -9,12 +10,15 @@ from psycopg2 import sql
 from connection import connect_to_redis, connect_to_postgres
 
 class upbit_dataloader:
-    def __init__(self, ticker: str):
-        self.ticker = ticker
-        self.q = self.ticker + '_q'
+    def __init__(self, dataloader_name: str):
+        config = configparser.ConfigParser().read('conf/producer.conf')
+
+        self.dataloader_name = dataloader_name
+        self.q = config[dataloader_name]['queue']
+        self.commit_count = config[dataloader_name]['commit_count']
 
         log_directory = "/CryptoStream/logs/dataloader"  
-        log_filename = 'upbit_dataloader.log'  
+        log_filename = f"{dataloader_name}.log"  
         log_file_path = os.path.join(log_directory, log_filename)
 
         if not os.path.exists(log_directory):
@@ -35,7 +39,7 @@ class upbit_dataloader:
                        'up_ask_vol': up_data['obu'][0]['as']
                       }
 
-        return return_dict 
+        return return_dict
 
     def redis_to_postgres(self):
         pg_conn = connect_to_postgres()
@@ -49,13 +53,14 @@ class upbit_dataloader:
                 if redis_conn.llen(self.q) > 0:
                     up_data = redis_conn.rpop(self.q) 
                     up_data = json.loads(up_data)
+                    ticker = up_data['code'][4:]
                     up_data = self.transform_data(up_data)
 
                     dt_object = datetime.fromtimestamp(up_data['timestamp'])
                     timestamp_date = dt_object.strftime('%Y%m%d')
 
                     insert_query = f"""
-                        INSERT INTO {self.ticker}_upbit_{timestamp_date} (
+                        INSERT INTO {ticker}_upbit_{timestamp_date} (
                             timestamp, 
                             up_bid_price, 
                             up_bid_vol, 
@@ -72,7 +77,7 @@ class upbit_dataloader:
                                                 ))
                     insert_count += 1
 
-                    if insert_count % 10 == 0:
+                    if insert_count % self.commit_count == 0:
                         pg_conn.commit()
                         insert_count = 0
                         
@@ -81,7 +86,7 @@ class upbit_dataloader:
                 pg_conn.rollback()
 
                 create_table_query = f"""
-                CREATE TABLE IF NOT EXISTS {self.ticker}_upbit_{timestamp_date} (
+                CREATE TABLE IF NOT EXISTS {ticker}_upbit_{timestamp_date} (
                     timestamp NUMERIC(20, 5) PRIMARY KEY,
                     up_bid_price NUMERIC(20, 10),
                     up_bid_vol NUMERIC(20, 10),
@@ -94,7 +99,7 @@ class upbit_dataloader:
                 cursor.execute(create_table_query)
                 pg_conn.commit()
 
-                logging.info(f"Create {self.ticker} table")
+                logging.info(f"Create {ticker} table")
 
                 # insert data
                 cursor.execute(insert_query, (up_data['timestamp'], 
@@ -104,7 +109,7 @@ class upbit_dataloader:
                                                 up_data['up_ask_vol']
                                                 ))
                 insert_count += 1
-                if insert_count % 10 == 0:
+                if insert_count % self.commit_count == 0:
                     pg_conn.commit()
                     insert_count = 0
 
@@ -126,4 +131,4 @@ class upbit_dataloader:
         self.redis_to_postgres()
 
 if __name__ == '__main__':
-    upbit_dataloader('BTC').run()
+    upbit_dataloader(sys.argv[1]).run()

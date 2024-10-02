@@ -53,26 +53,26 @@ services:
       network_custom:
         ipv4_address: 172.28.0.3
 
-  upbit_producer:
+  upbit_producer1:
     <<: *crptostream-common
     working_dir: /CryptoStream/producers
     command: >
       bash -c "
       python -m venv /venv &&
       /venv/bin/pip install -r /CryptoStream/requirements.txt && 
-      /venv/bin/python /CryptoStream/producers/upbit_producer.py"
+      /venv/bin/python /CryptoStream/producers/upbit_producer.py up_producer1"
     networks:
       network_custom:
         ipv4_address: 172.28.0.4
 
-  upbit_dataloader:
+  upbit_dataloader1:
     <<: *crptostream-common
     working_dir: /CryptoStream/dataloaders
     command: >
       bash -c "
       python -m venv /venv &&
       /venv/bin/pip install -r /CryptoStream/requirements.txt && 
-      /venv/bin/python /CryptoStream/dataloaders/upbit_dataloader.py"
+      /venv/bin/python /CryptoStream/dataloaders/upbit_dataloader.py dataloader1"
     networks:
       network_custom:
           ipv4_address: 172.28.0.5

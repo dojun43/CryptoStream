@@ -1,5 +1,6 @@
 import os
 import sys
+import configparser
 import logging
 import websockets
 import json
@@ -9,22 +10,26 @@ import asyncio
 from connection import connect_to_redis
 
 class upbit_producer:
-    def __init__(self, ticker: str):
-        self.ticker = ticker
-        self.q = self.ticker + '_q'
+    def __init__(self, producer_name: str):
+        config = configparser.ConfigParser().read('conf/producer.conf')
+
+        self.producer_name = producer_name
+        self.q = config[producer_name]['queue']
+
         self.uri = "wss://api.upbit.com/websocket/v1"
+        codes = ["KRW-" + ticker.upper() + ".5" for ticker in config[producer_name]['tickers']]
         self.subscribe_fmt = [
             {"ticket": "UNIQUE_TICKET"},
             {
                 "type": "orderbook",
-                "codes": ["KRW-" + self.ticker.upper() + ".5"],
+                "codes": codes,
                 "isOnlyRealtime": True
             },
             {"format": "SIMPLE"}
         ]
 
         log_directory = "/CryptoStream/logs/producer"  
-        log_filename = 'upbit_producer.log'  
+        log_filename = f"{self.producer_name}.log"  
         log_file_path = os.path.join(log_directory, log_filename)
 
         if not os.path.exists(log_directory):
@@ -81,4 +86,4 @@ class upbit_producer:
         self.up_producer()
 
 if __name__ == '__main__':
-    upbit_producer('BTC').run()
+    upbit_producer(sys.argv[1]).run()
