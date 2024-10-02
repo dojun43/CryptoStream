@@ -1,5 +1,11 @@
 venv
 test
+.env
+
 private
 /terraform/.terraform*
 /terraform/terraform*
+
+connections/__*
+dataloaders/__*
+producers/__*
