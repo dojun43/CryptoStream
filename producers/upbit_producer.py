@@ -6,10 +6,7 @@ import json
 import redis
 import time
 import asyncio
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from connections.connection import connect_to_redis
-
+from connection import connect_to_redis
 
 class upbit_producer:
     def __init__(self, ticker: str):

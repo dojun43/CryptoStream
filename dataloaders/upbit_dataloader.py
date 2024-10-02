@@ -6,9 +6,7 @@ from datetime import datetime
 import redis
 import psycopg2
 from psycopg2 import sql
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from connections.connection import connect_to_redis, connect_to_postgres
+from connection import connect_to_redis, connect_to_postgres
 
 class upbit_dataloader:
     def __init__(self, ticker: str):
