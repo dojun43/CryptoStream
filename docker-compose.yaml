@@ -4,7 +4,6 @@ x-crptostream-common:
   env_file:
       - .env
   volumes:
-    - ${CRPTOSTREAM_PROJ_DIR:-.}/conenctions:/CryptoStream/conenctions
     - ${CRPTOSTREAM_PROJ_DIR:-.}/dataloaders:/CryptoStream/dataloaders
     - ${CRPTOSTREAM_PROJ_DIR:-.}/producers:/CryptoStream/producers
     - ${CRPTOSTREAM_PROJ_DIR:-.}/logs:/CryptoStream/logs
@@ -56,24 +55,24 @@ services:
 
   upbit_producer:
     <<: *crptostream-common
+    working_dir: /CryptoStream/producers
     command: >
       bash -c "
-      pip install -r requirements.txt && 
-      python /CryptoStream/producers/upbit_producer.py"
+      python -m venv /venv &&
+      /venv/bin/pip install -r /CryptoStream/requirements.txt && 
+      /venv/bin/python /CryptoStream/producers/upbit_producer.py"
     networks:
       network_custom:
         ipv4_address: 172.28.0.4
 
   upbit_dataloader:
     <<: *crptostream-common
+    working_dir: /CryptoStream/dataloaders
     command: >
       bash -c "
-      pip install -r requirements.txt && 
-      python /CryptoStream/producers/upbit_dataloader.py"
-    depends_on:
-      <<: *crptostream-common-depends-on
-      upbit_producer:
-          condition: service_completed_successfully
+      python -m venv /venv &&
+      /venv/bin/pip install -r /CryptoStream/requirements.txt && 
+      /venv/bin/python /CryptoStream/dataloaders/upbit_dataloader.py"
     networks:
       network_custom:
           ipv4_address: 172.28.0.5
