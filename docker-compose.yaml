@@ -1,3 +1,21 @@
+x-crptostream-common:
+  &crptostream-common
+  image: python:3.12
+  env_file:
+      - .env
+  volumes:
+    - ${CRPTOSTREAM_PROJ_DIR:-.}/conenctions:/CryptoStream/conenctions
+    - ${CRPTOSTREAM_PROJ_DIR:-.}/dataloaders:/CryptoStream/dataloaders
+    - ${CRPTOSTREAM_PROJ_DIR:-.}/producers:/CryptoStream/producers
+    - ${CRPTOSTREAM_PROJ_DIR:-.}/logs:/CryptoStream/logs
+    - ${CRPTOSTREAM_PROJ_DIR:-.}/requirements.txt:/CryptoStream/requirements.txt
+  depends_on:
+    &crptostream-common-depends-on
+    redis:
+      condition: service_healthy
+    postgres:
+      condition: service_healthy
+
 services:
   postgres:
     image: postgres:13
@@ -35,6 +53,30 @@ services:
     networks:
       network_custom:
         ipv4_address: 172.28.0.3
+
+  upbit_producer:
+    <<: *crptostream-common
+    command: >
+      bash -c "
+      pip install -r requirements.txt && 
+      python /CryptoStream/producers/upbit_producer.py"
+    networks:
+      network_custom:
+        ipv4_address: 172.28.0.4
+
+  upbit_dataloader:
+    <<: *crptostream-common
+    command: >
+      bash -c "
+      pip install -r requirements.txt && 
+      python /CryptoStream/producers/upbit_dataloader.py"
+    depends_on:
+      <<: *crptostream-common-depends-on
+      upbit_producer:
+          condition: service_completed_successfully
+    networks:
+      network_custom:
+          ipv4_address: 172.28.0.5
 
 volumes:
   postgres-db-volume:
