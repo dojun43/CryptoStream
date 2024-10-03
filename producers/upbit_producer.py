@@ -11,7 +11,8 @@ from connection import connect_to_redis
 
 class upbit_producer:
     def __init__(self, producer_name: str):
-        config = configparser.ConfigParser().read('conf/producer.conf')
+        config = configparser.ConfigParser()
+        config.read('/CryptoStream/conf/producer.conf')
 
         self.producer_name = producer_name
         self.q = config[producer_name]['queue']

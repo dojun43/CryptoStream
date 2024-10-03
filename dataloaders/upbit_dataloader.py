@@ -11,7 +11,8 @@ from connection import connect_to_redis, connect_to_postgres
 
 class upbit_dataloader:
     def __init__(self, dataloader_name: str):
-        config = configparser.ConfigParser().read('conf/producer.conf')
+        config = configparser.ConfigParser()
+        config.read('/CryptoStream/conf/dataloader.conf')
 
         self.dataloader_name = dataloader_name
         self.q = config[dataloader_name]['queue']
