@@ -91,7 +91,7 @@ class upbit_dataloader:
                     if insert_count % self.commit_count == 0:
                         pg_conn.commit()
                         insert_count = 0
-                        print(f"Commit complete: {self.commit_count} records added")
+                        logging.info(f"Commit complete: {self.commit_count} records added")
                         
             except psycopg2.errors.UndefinedTable:
                 # create table
@@ -126,7 +126,7 @@ class upbit_dataloader:
                 if insert_count % self.commit_count == 0:
                     pg_conn.commit()
                     insert_count = 0
-                    print(f"Commit complete: {self.commit_count} records added")
+                    logging.info(f"Commit complete: {self.commit_count} records added")
 
             except (redis.ConnectionError, redis.TimeoutError) as e:
                 logging.error(f"Redis Connection failed: {e}")
