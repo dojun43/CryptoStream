@@ -11,13 +11,7 @@ from connection import connect_to_redis, connect_to_postgres
 
 class upbit_dataloader:
     def __init__(self, dataloader_name: str):
-        config = configparser.ConfigParser()
-        config.read('/CryptoStream/conf/dataloader.conf')
-
-        self.dataloader_name = dataloader_name
-        self.q = config[dataloader_name]['queue']
-        self.commit_count = config[dataloader_name]['commit_count']
-
+        # log setting
         log_directory = "/CryptoStream/logs/dataloader"  
         log_filename = f"{dataloader_name}.log"  
         log_file_path = os.path.join(log_directory, log_filename)
@@ -31,6 +25,19 @@ class upbit_dataloader:
             filename=log_file_path, 
             filemode='a' # a: append
         )
+
+        # read conf
+        config = configparser.ConfigParser()
+        config.read('/CryptoStream/conf/dataloader.conf')
+
+        # variables
+        self.dataloader_name = dataloader_name
+        self.q = config.get(dataloader_name,'queue')
+        self.commit_count = config.get(dataloader_name,'commit_count')
+        self.commit_count = int(self.commit_count)
+
+        logging.info(f"{self.dataloader_name} queue: {self.q}")
+        logging.info(f"{self.dataloader_name} commit count: {self.commit_count}")
 
     def transform_data(self, up_data: dict[str, any]) -> dict:
         return_dict = {'timestamp': up_data['tms'] / 1000,
@@ -52,11 +59,13 @@ class upbit_dataloader:
         while True:
             try:
                 if redis_conn.llen(self.q) > 0:
+                    # get data
                     up_data = redis_conn.rpop(self.q) 
                     up_data = json.loads(up_data)
-                    ticker = up_data['code'][4:]
+                    ticker = up_data['cd'][4:]
                     up_data = self.transform_data(up_data)
 
+                    # insert data
                     dt_object = datetime.fromtimestamp(up_data['timestamp'])
                     timestamp_date = dt_object.strftime('%Y%m%d')
 
@@ -78,9 +87,11 @@ class upbit_dataloader:
                                                 ))
                     insert_count += 1
 
+                    # commit
                     if insert_count % self.commit_count == 0:
                         pg_conn.commit()
                         insert_count = 0
+                        print(f"Commit complete: {self.commit_count} records added")
                         
             except psycopg2.errors.UndefinedTable:
                 # create table
@@ -110,9 +121,12 @@ class upbit_dataloader:
                                                 up_data['up_ask_vol']
                                                 ))
                 insert_count += 1
+
+                # commit
                 if insert_count % self.commit_count == 0:
                     pg_conn.commit()
                     insert_count = 0
+                    print(f"Commit complete: {self.commit_count} records added")
 
             except (redis.ConnectionError, redis.TimeoutError) as e:
                 logging.error(f"Redis Connection failed: {e}")

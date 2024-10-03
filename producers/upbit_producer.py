@@ -11,26 +11,9 @@ from connection import connect_to_redis
 
 class upbit_producer:
     def __init__(self, producer_name: str):
-        config = configparser.ConfigParser()
-        config.read('/CryptoStream/conf/producer.conf')
-
-        self.producer_name = producer_name
-        self.q = config[producer_name]['queue']
-
-        self.uri = "wss://api.upbit.com/websocket/v1"
-        codes = ["KRW-" + ticker.upper() + ".5" for ticker in config[producer_name]['tickers']]
-        self.subscribe_fmt = [
-            {"ticket": "UNIQUE_TICKET"},
-            {
-                "type": "orderbook",
-                "codes": codes,
-                "isOnlyRealtime": True
-            },
-            {"format": "SIMPLE"}
-        ]
-
+        # log setting
         log_directory = "/CryptoStream/logs/producer"  
-        log_filename = f"{self.producer_name}.log"  
+        log_filename = f"{producer_name}.log"  
         log_file_path = os.path.join(log_directory, log_filename)
 
         if not os.path.exists(log_directory):
@@ -42,6 +25,32 @@ class upbit_producer:
             filename=log_file_path, 
             filemode='a' # a: append
         )
+
+        # read conf
+        config = configparser.ConfigParser()
+        config.read('/CryptoStream/conf/producer.conf')
+
+        # variables
+        self.producer_name = producer_name
+        self.q = config.get(producer_name, 'queue')
+        self.tickers = config.get(producer_name,'tickers')
+        self.tickers = self.tickers.split(',')
+
+        logging.info(f"{self.producer_name} queue: {self.q}")
+        logging.info(f"{self.producer_name} tickers: {self.tickers}")
+
+        # websocket setting
+        self.uri = "wss://api.upbit.com/websocket/v1"
+        codes = ["KRW-" + ticker.upper() + ".5" for ticker in self.tickers]
+        self.subscribe_fmt = [
+            {"ticket": "UNIQUE_TICKET"},
+            {
+                "type": "orderbook",
+                "codes": codes,
+                "isOnlyRealtime": True
+            },
+            {"format": "SIMPLE"}
+        ]
 
     async def up_ws_client(self):        
         redis_conn = connect_to_redis()
