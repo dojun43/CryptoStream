@@ -66,6 +66,28 @@ services:
       network_custom:
         ipv4_address: 172.28.0.4
 
+  upbit_producer2:
+    <<: *crptostream-common
+    command: >
+      bash -c "
+      python -m venv /venv &&
+      /venv/bin/pip install -r /CryptoStream/requirements.txt && 
+      /venv/bin/python /CryptoStream/producers/upbit_producer.py upbit_producer2"
+    networks:
+      network_custom:
+        ipv4_address: 172.28.0.5
+
+  upbit_producer3:
+    <<: *crptostream-common
+    command: >
+      bash -c "
+      python -m venv /venv &&
+      /venv/bin/pip install -r /CryptoStream/requirements.txt && 
+      /venv/bin/python /CryptoStream/producers/upbit_producer.py upbit_producer3"
+    networks:
+      network_custom:
+        ipv4_address: 172.28.0.6
+
   upbit_dataloader1:
     <<: *crptostream-common
     command: >
@@ -75,7 +97,29 @@ services:
       /venv/bin/python /CryptoStream/dataloaders/upbit_dataloader.py upbit_dataloader1"
     networks:
       network_custom:
-          ipv4_address: 172.28.0.5
+          ipv4_address: 172.28.0.7
+
+  upbit_dataloader2:
+    <<: *crptostream-common
+    command: >
+      bash -c "
+      python -m venv /venv &&
+      /venv/bin/pip install -r /CryptoStream/requirements.txt && 
+      /venv/bin/python /CryptoStream/dataloaders/upbit_dataloader.py upbit_dataloader2"
+    networks:
+      network_custom:
+          ipv4_address: 172.28.0.8
+
+  upbit_dataloader3:
+    <<: *crptostream-common
+    command: >
+      bash -c "
+      python -m venv /venv &&
+      /venv/bin/pip install -r /CryptoStream/requirements.txt && 
+      /venv/bin/python /CryptoStream/dataloaders/upbit_dataloader.py upbit_dataloader3"
+    networks:
+      network_custom:
+          ipv4_address: 172.28.0.9
 
 volumes:
   postgres-db-volume:
