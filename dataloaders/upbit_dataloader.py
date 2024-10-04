@@ -127,6 +127,11 @@ class upbit_dataloader:
                     pg_conn.commit()
                     insert_count = 0
                     logging.info(f"Commit complete: {self.commit_count} records added")
+            
+            except (psycopg2.DatabaseError, psycopg2.OperationalError) as e:
+                logging.error(f"Transaction error: {e}")
+                pg_conn.rollback()
+                insert_count = 0
 
             except (redis.ConnectionError, redis.TimeoutError) as e:
                 logging.error(f"Redis Connection failed: {e}")
